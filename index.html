@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Your Learning Platform</title>
+</head>
+<body>
+
+<div id="app">
+    <!-- Section for Questions -->
+    <section id="questions">
+        <h2>Ask a Question</h2>
+        <form id="questionForm">
+            <label for="username">Your Username:</label>
+            <input type="text" id="username" name="username" placeholder="Enter your username" required>
+
+            <label for="year">Your Year:</label>
+            <select id="year" name="year">
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+            </select>
+
+            <label for="question">Your Question:</label>
+            <textarea id="question" name="question" placeholder="Type your question here" required></textarea>
+
+            <button type="submit">Post Question</button>
+        </form>
+
+        <!-- Displaying Posted Questions -->
+        <div id="postedQuestions">
+            <h2>Questions Asked</h2>
+            <ul id="questionList">
+                <!-- Questions will be dynamically added here -->
+            </ul>
+        </div>
+    </section>
+
+    <!-- Script for Questions and Replies -->
+    <script>
+        document.getElementById("questionForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const username = document.getElementById("username").value;
+            const year = document.getElementById("year").value;
+            const questionText = document.getElementById("question").value;
+
+            const newQuestion = {
+                username: username,
+                year: year,
+                question: questionText,
+                timestamp: new Date().toISOString(),
+                replies: [],
+            };
+
+            // Retrieve existing questions from localStorage
+            let existingQuestions = JSON.parse(localStorage.getItem("questions")) || [];
+
+            // Add the new question to the array
+            existingQuestions.push(newQuestion);
+
+            // Save the updated questions array back to localStorage
+            localStorage.setItem("questions", JSON.stringify(existingQuestions));
+
+            // Refresh the question list
+            displayQuestions();
+        });
+
+        // Function to display questions from localStorage
+        function displayQuestions() {
+            const questionListElement = document.getElementById("questionList");
+            questionListElement.innerHTML = "";
+
+            // Retrieve questions from localStorage
+            const storedQuestions = JSON.parse(localStorage.getItem("questions")) || [];
+
+            // Display each question
+            storedQuestions.forEach(function (question, index) {
+                const listItem = document.createElement("li");
+                listItem.innerHTML = `
+                    <p><strong>${question.username}, Year ${question.year}:</strong> ${question.question}</p>
+                    <div class="actions">
+                        <button class="reply" onclick="toggleReplyForm(${index})">Reply</button>
+                        <button class="like">Like</button>
+                        <button class="dislike">Dislike</button>
+                    </div>
+                    <form class="replyForm" id="replyForm${index}" style="display: none;">
+                        <label for="replyUsername">Your Username:</label>
+                        <input type="text" class="replyUsername" name="replyUsername" placeholder="Enter your username" required>
+
+                        <label for="replyYear">Your Year:</label>
+                        <select class="replyYear" name="replyYear">
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+
+                        <label for="replyText">Your Reply:</label>
+                        <textarea class="replyText" name="replyText" placeholder="Type your reply here" required></textarea>
+                        <button type="button" onclick="postReply(${index})">Post Reply</button>
+                    </form>
+                    <ul class="replies">
+                        ${displayReplies(question.replies)}
+                    </ul>
+                `;
+                questionListElement.appendChild(listItem);
+            });
+        }
+
+        // Function to display replies
+        function displayReplies(replies) {
+            if (replies.length === 0) {
+                return "<p>No replies yet.</p>";
+            }
+
+            return replies.map(reply => `<li>${reply.username}, Year ${reply.year}: ${reply.reply}</li>`).join('');
+        }
+
+        // Display existing questions when the page loads
+        displayQuestions();
+
+        // Function to toggle the visibility of the reply form
+        function toggleReplyForm(index) {
+            const replyForm = document.getElementById(`replyForm${index}`);
+            replyForm.style.display = replyForm.style.display === "none" ? "block" : "none";
+        }
+
+        // Function to handle reply form submission
+        function postReply(index) {
+            const replyForm = document.getElementById(`replyForm${index}`);
+            const username = replyForm.querySelector(".replyUsername").value;
+            const year = replyForm.querySelector(".replyYear").value;
+            const replyText = replyForm.querySelector(".replyText").value;
+
+            const newReply = {
+                username: username,
+                year: year,
+                reply: replyText,
+                timestamp: new Date().toISOString(),
+            };
+
+            // Add the reply to the selected question's replies array
+            let existingQuestions = JSON.parse(localStorage.getItem("questions")) || [];
+            existingQuestions[index].replies.push(newReply);
+            localStorage.setItem("questions", JSON.stringify(existingQuestions));
+
+            // Refresh the question list
+            displayQuestions();
+        }
+    </script>
+
+    <!-- Section for Resources -->
+    <section id="resources">
+        <h2>Resources</h2>
+        <label for="yearSelector">Select your year:</label>
+        <select id="yearSelector">
+            <option value="firstYear">First Year</option>
+        </select>
+        <button id="joinTelegramBtn">Join Telegram Group</button>
+    </section>
+    <script>
+        // JavaScript logic to handle button click and redirect
+        document.getElementById("joinTelegramBtn").addEventListener("click", function () {
+            window.location.href = "https://t.me/s/Feresource";
+        });
+    </script>
+    <!-- Section for Announcements -->
+    <section id="announcements">
+        <h2>Announcements</h2>
+        <h3 id="announcementTitle">Time Left for IA</h3>
+        <div id="countdown" style="font-size: 24px; font-weight: bold; color: #333;">
+            <div id="days" style="display: inline-block;"></div>
+            <div id="hours" style="display: inline-block;"></div>
+            <div id="minutes" style="display: inline-block;"></div>
+            <div id="seconds" style="display: inline-block;"></div>
+        </div>
+    </section>
+    <script>
+        // Set the date for the announcement (February 17, 2024)
+        const announcementDate = new Date("February 17, 2024 00:00:00 GMT+00:00").getTime();
+    
+        // Update the countdown every second
+        const countdownInterval = setInterval(function () {
+            const now = new Date().getTime();
+            const timeRemaining = announcementDate - now;
+    
+            if (timeRemaining > 0) {
+                const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+    
+                document.getElementById("days").innerHTML = days + "d ";
+                document.getElementById("hours").innerHTML = hours + "h ";
+                document.getElementById("minutes").innerHTML = minutes + "m ";
+                document.getElementById("seconds").innerHTML = seconds + "s";
+    
+                // Set the color here
+                document.getElementById("countdown").style.color = "#fff";
+            } else {
+                clearInterval(countdownInterval);
+                document.getElementById("countdown").innerHTML = "Announcement has arrived!";
+            }
+        }, 1000);
+    </script>    
+</div>
+<div id="countdown" style="font-size: 24px; font-weight: bold; color: #fff;">
+    <div id="days" style="display: inline-block;"></div>
+    <div id="hours" style="display: inline-block;"></div>
+    <div id="minutes" style="display: inline-block;"></div>
+    <div id="seconds" style="display: inline-block;"></div>
+</div>
+
+<script src="Announcements.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
